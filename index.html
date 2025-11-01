@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grammar Forge: Quiz Tool</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
+
+      :root {
+        --color-primary: #8a7ffc;
+        --color-primary-dark: #a78bfa;
+        --color-bg-dark: #121212;
+        --color-card-dark: #1E1E1E;
+        --color-text-light: #E0E0E0;
+        --color-text-medium-dark: #9E9E9E;
+        --color-success-bg: #14532d;
+        --color-success-text: #bbf7d0;
+        --color-error-bg: #7f1d1d;
+        --color-error-text: #fecaca;
+        --color-warning-border: #fcd34d;
+        --color-focus-glow: #3a328a;
+        /* New color for mistakes */
+        --color-mistake-card: #2c2541;
+        /* Darker purple/indigo */
+      }
+
+      body {
+        font-family: 'Merriweather', serif;
+        /* --- Elden Ring Radagon Background & Sizing --- */
+        background-image: url('https://artfiles.alphacoders.com/154/thumb-800-154343.webp');
+        background-size: contain;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        background-color: #000000;
+        /* Fallback/background behind image */
+        /* --- End Radagon Background --- */
+        min-height: 100vh;
+        color: white;
+      }
+
+      .container {
+        /* Changed max-width for mobile-only view */
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        padding: 1rem;
+      }
+
+      .header {
+        background-color: rgba(30, 30, 30, 0.5);
+        /* Transparent dark color */
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border-radius: 0.75rem;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        position: inherit;
+        top: 0;
+        z-index: 10;
+      }
+
+      .flex-between {
+        display: flex;
+        /* Changed to row by default for mobile header */
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      /* Removed sm: media query for flex-direction */
+      .button-primary {
+        background-color: var(--color-primary);
+        color: white;
+        font-weight: 600;
+        font-size: small;
+        padding: 5px;
+        border-radius: 0.5rem;
+        transition: background-color 0.2s;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        /* Added for better icon alignment */
+        align-items: center;
+        /* Added for better icon alignment */
+      }
+
+      .button-primary:hover:not(:disabled) {
+        background-color: var(--color-primary-dark);
+      }
+
+      .button-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* New button style for Review Mistakes */
+      .button-review {
+        background-color: #f59e0b;
+        /* Amber */
+        color: var(--color-bg-dark);
+        font-weight: 600;
+        font-size: x-small;
+        padding: 5px;
+        border-radius: 0.5rem;
+        transition: background-color 0.2s;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        /* Added for better icon alignment */
+        align-items: center;
+        /* Added for better icon alignment */
+        margin-right: 0.75rem;
+        /* Space between buttons */
+      }
+
+      .button-review:hover {
+        background-color: #d97706;
+        /* Darker Amber */
+      }
+
+      .button-secondary {
+        background-color: #e5e7eb;
+        color: #4b5563;
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        transition: background-color 0.2s;
+        border: none;
+        cursor: pointer;
+      }
+
+      .button-secondary:hover {
+        background-color: #4b5563;
+      }
+
+      .button-ai {
+        background-color: #6d28d9;
+        /* Violet */
+        color: white;
+        font-weight: 600;
+        font-size: x-small;
+        padding: 5px;
+        border-radius: 0.5rem;
+        transition: background-color 0.2s;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        border: none;
+        cursor: pointer;
+      }
+
+      .button-ai:hover:not(:disabled) {
+        background-color: #5b21b6;
+        /* Darker Violet */
+      }
+
+      .button-ai:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* Added delete button style */
+      .button-danger {
+        background-color: var(--color-error-bg);
+        /* Use dark red for danger */
+        color: white;
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        transition: background-color 0.2s;
+        border: none;
+        cursor: pointer;
+        font-size: xx-small;
+      }
+
+      .button-danger:hover {
+        background-color: #b91c1c;
+        /* red-700 */
+      }
+
+      /* New button for marking mistake as mastered */
+      .button-mastered {
+        background-color: #10b981;
+        /* Emerald */
+        color: white;
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        transition: background-color 0.2s;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 1rem;
+      }
+
+      .button-mastered:hover {
+        background-color: #059669;
+        /* Darker Emerald */
+      }
+
+      .quiz-grid {
+        display: grid;
+        /* Always 1 column for mobile-only */
+        grid-template-columns: repeat(1, 1fr);
+        gap: 1.5rem;
+      }
+
+      /* Removed md: and lg: media queries for grid-template-columns */
+      .quiz-card {
+        background-color: rgba(30, 30, 30, 0.5);
+        /* Transparent dark color */
+        border-radius: 0.75rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+        border-top: 4px solid var(--color-primary);
+        transition: box-shadow 0.3s;
+      }
+
+      .quiz-card:hover {
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+
+      /* New style for mistake cards */
+      .mistake-card {
+        background-color: rgba(30, 30, 30, 0.5);
+        border-top: 4px solid var(--color-error-text);
+        margin-left: -20px;
+        margin-right: -20px;
+      }
+
+      .quiz-question-box {
+        background-color: #1a1e33;
+        /* indigo-50 */
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+        margin-bottom: 1.5rem;
+      }
+
+      .quiz-option {
+        width: 100%;
+        text-align: left;
+        background-color: #374151;
+        /* gray-50 */
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid #4b5563;
+        transition: background-color 0.15s, border-color 0.15s;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        font-weight: 500;
+        cursor: pointer;
+        color: orange;
+      }
+
+      .quiz-option:hover:not(:disabled) {
+        background-color: #4b5563;
+        /* indigo-100 */
+      }
+
+      .quiz-option:disabled {
+        cursor: default;
+      }
+
+      .quiz-option.correct {
+        background-color: var(--color-success-bg);
+        border-color: var(--color-success-text);
+      }
+
+      .quiz-option.incorrect {
+        background-color: var(--color-error-bg);
+        border-color: var(--color-error-text);
+      }
+
+      /* Fill in the Blank Input Styling */
+      .fitb-input {
+        width: 70px;
+        /* Standard width for a blank */
+        height: 10px;
+        padding: 0.25rem 0.5rem;
+        margin: 0 0.25rem;
+        border: 2px solid var(--color-primary);
+        border-radius: 0.25rem;
+        text-align: center;
+        font-size: small;
+        font-weight: 600;
+        color: var(--color-primary);
+        background-color: var(--color-card-dark);
+      }
+
+      .fitb-input:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px var(--color-primary-dark);
+        /* Focus ring */
+      }
+
+      .fitb-text-wrapper {
+        display: inline;
+      }
+
+      .feedback-area {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid transparent;
+      }
+
+      .feedback-area.success {
+        background-color: var(--color-success-bg);
+        color: var(--color-success-text);
+        border-color: var(--color-success-text);
+      }
+
+      .feedback-area.error {
+        background-color: var(--color-error-bg);
+        color: var(--color-error-text);
+        border-color: var(--color-error-text);
+      }
+
+      /* Explanation Styling */
+      .feedback-explanation {
+        margin-top: 0.75rem;
+        font-size: 0.9rem;
+        color: white;
+        padding-top: 0.5rem;
+        border-top: 1px dashed #4b5563;
+        /* Added for focus */
+        padding: 0.75rem;
+        border-radius: 0.25rem;
+        margin-top: 1rem;
+        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        transform-origin: top;
+      }
+
+      @keyframes focus-glow {
+        0% {
+          background-color: transparent;
+          transform: scale(1);
+        }
+
+        50% {
+          background-color: var(--color-focus-glow);
+          /* New var */
+          transform: scale(1.02);
+          box-shadow: 0 0 15px var(--color-primary-dark);
+        }
+
+        100% {
+          background-color: transparent;
+          transform: scale(1);
+        }
+      }
+
+      .feedback-explanation.focused {
+        animation: focus-glow 1.2s ease-in-out;
+      }
+
+      /* Modal Styles */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(17, 24, 39, 0.75);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        z-index: 50;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s;
+      }
+
+      .modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .modal-content {
+        background-color: rgba(30, 30, 30, 0.8);
+        /* Transparent dark color */
+        border-radius: 0.75rem;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        width: 100%;
+        max-width: 42rem;
+        padding: 1.5rem;
+        transform: scale(0.95);
+        transition: transform 0.3s;
+        margin: -10px;
+      }
+
+      .modal-overlay.active .modal-content {
+        transform: scale(1);
+      }
+
+      textarea {
+        width: 90%;
+        height: 100px;
+        padding: 0.75rem;
+        border: 1px solid #4b5563;
+        border-radius: 0.5rem;
+        font-family: monospace;
+        font-size: 0.875rem;
+        resize: vertical;
+        background-color: #121212;
+        color: #E0E0E0;
+      }
+
+      /* Toast Styles */
+      .toast-container {
+        position: fixed;
+        /* --- CHANGE 1: Sets the container to the top edge --- */
+        top: 1rem;
+        /* --- The right edge remains the same --- */
+        right: 1rem;
+        z-index: 60;
+        display: flex;
+        /* --- You should also reverse the stacking order for a top-right position --- */
+        flex-direction: column-reverse;
+        gap: 0.5rem;
+      }
+
+      .toast {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        color: white;
+        transition: all 0.3s;
+        opacity: 0;
+        /* --- CHANGE 2: Makes the toast start just above its final position to slide down --- */
+        transform: translateY(-0.5rem);
+      }
+
+      .toast.show {
+        opacity: 1;
+        /* Keeps the final position at zero translation */
+        transform: translateY(0);
+        font-size: x-small;
+      }
+
+      .toast-success {
+        background-color: #10b981;
+      }
+
+      .toast-error {
+        background-color: #ef4444;
+      }
+
+      .elden-ring-title {
+        font-family: 'Cinzel', serif;
+        color: var(--color-primary);
+        text-align: center;
+        color: #ffc950;
+        text-transform: uppercase;
+        letter-spacing: 5px;
+        cursor: pointer;
+        text-shadow:
+          0 0 5px rgba(255, 201, 80, 0.5),
+          /* Soft inner glow */
+          0 0 10px rgba(0, 0, 0, 0.8),
+          /* Black drop shadow for depth */
+          0 0 20px rgba(255, 201, 80, 0.2);
+        /* Faint outer glow */
+        line-height: 1.1;
+        padding: 10px 0;
+        border-top: 1px solid #ffc950;
+        border-bottom: 1px solid #ffc950;
+      }
+
+      @media (max-width: 600px) {
+        .elden-ring-title {
+          /* font-size: 2.5em; */
+          letter-spacing: 3px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app" class="container">
+      <header class="header">
+        <h1 class="elden-ring-title" onclick="showListView()">Grammar Forge</h1>
+        <div class="flex-between">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <button onclick="showMistakesView()" class="button-review" id="review-mistakes-button" style="display: none;">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5" style="display: inline-block; width: 1.25rem; height: 1.25rem; margin-right: 0.5rem; vertical-align: middle; color: var(--color-bg-dark);">
+                <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
+                <path fill-rule="evenodd" d="M.038 8.078a.75.75 0 01.32.748C1.516 13.177 5.093 16 10 16s8.484-2.823 9.642-7.174a.75.75 0 01.32-.748.75.75 0 01.764.18C20.686 9.422 19.34 16 10 16c-9.34 0-10.686-6.578-10.876-7.832a.75.75 0 01.764-.18zM10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" clip-rule="evenodd" />
+              </svg> Review Mistakes </button>
+            <button onclick="showImportModal()" class="button-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" style="display: inline-block; width: 1.25rem; height: 1.25rem; margin-right: 0.5rem; vertical-align: middle;">
+                <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L6.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+              </svg> Add Topics </button>
+          </div>
+        </div>
+      </header>
+      <main id="main-content">
+        <div id="quiz-list-view">
+          <h2 class="text-2xl font-bold" style="color: var(--color-text-light); margin-bottom: 1.5rem;">Available Grammar Quizzes</h2>
+          <div id="quiz-list" class="quiz-grid"></div>
+          <div id="empty-state" style="display: none; text-align: center; padding: 3rem; background-color: rgba(30, 30, 30, 0.5); border-radius: 0.75rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 2px dashed #4b5563; margin-top: 2rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" style="width: 2.5rem; height: 2.5rem; color: #9ca3af; margin: auto;" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4zm5 2a1 1 0 00-1 1v3a1 1 0 002 0V7a1 1 0 00-1-1zm3 1a1 1 0 00-1 1v5a1 1 0 002 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+            <p style="margin-top: 1rem; font-size: 1.125rem; font-weight: 500; color: var(--color-text-medium-dark);">No quizzes imported yet.</p>
+            <p style="margin-top: 0.25rem; font-size: 0.875rem; color: #6b7280;">Use the "Add Topics" button to add your first quiz set.</p>
+          </div>
+        </div>
+        <div id="quiz-run-view" style="display: none;">
+          <button onclick="showListView()" style="color: var(--color-primary); margin-bottom: 1rem; font-weight: 500; display: flex; align-items: center; border: none; background: none; cursor: pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" style="width: 1.25rem; height: 1.25rem; margin-right: 0.25rem;" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H16a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+            </svg> Back to Quizzes </button>
+          <div id="quiz-container" style="background-color: rgba(30, 30, 30, 0.5); /* Transparent dark color */ padding: 1px; border-radius: 0.75rem; box-shadow: 0 10px 15px rgba(0,0,0,0.1); margin-left: -20px; margin-right: -17px;"></div>
+        </div>
+        <div id="mistakes-view" style="display: none;">
+          <button onclick="showListView()" style="color: var(--color-primary); margin-bottom: 1rem; font-weight: 500; display: flex; align-items: center; border: none; background: none; cursor: pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" style="width: 1.25rem; height: 1.25rem; margin-right: 0.25rem;" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H16a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+            </svg> Back to Quizzes </button>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 class="text-2xl font-bold" style="color: var(--color-error-text); margin: 0;">Review Your Mistakes</h3>
+            <button id="ai-recommend-button" onclick="generateRecommendedTopic()" class="button-ai" style="padding: 0.5rem 1rem;">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5" style="display: inline-block; width: 1.25rem; height: 1.25rem; margin-right: 0.5rem; vertical-align: middle;">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.91-7-7.93 0-.96.18-1.9.49-2.77l5.44 5.44.7.71.01.01H12c.55 0 1-.45 1-1v-4.5c0-.25.11-.5.3-.67l.1-.09c.17-.15.4-.19.62-.12l3.4 1.13c.2.06.33.25.33.47v2.24c0 3.29-2.43 6.01-5.65 6.46l-.35.02zM19.34 14c-.18-.62-.32-1.27-.42-1.95l-1.3 1.3c-.39.39-1.02.39-1.41 0l-1.3-1.3c-.39-.39-.39-1.02 0-1.41l1.3-1.3c.39-.39 1.02-.39 1.41 0l1.3 1.3c.39.39.39 1.02 0 1.41l-1.3 1.3c-.39.39-1.02.39-1.41 0l-1.3-1.3c-.39-.39-.39-1.02 0-1.41l1.3-1.3c.39.39 1.02-.39 1.41 0l.44.44C19.8 8.1 19.98 10.04 20 12c0 .94-.14 1.86-.39 2.73l-.27.99z" />
+              </svg>
+              <span id="ai-recommend-default-text">AI Recommended Topic</span>
+              <span id="ai-recommend-loading-text" style="display: none;">Analyzing...</span>
+            </button>
+          </div>
+          <div id="mistakes-list" class="quiz-grid"></div>
+          <div id="mistakes-empty-state" style="display: none; text-align: center; padding: 3rem; background-color: var(--color-card-dark); border-radius: 0.75rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 2px dashed #4b5563; margin-top: 2rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" style="width: 2.5rem; height: 2.5rem; color: #10b981; margin: auto;" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            <p style="margin-top: 1rem; font-size: 1.125rem; font-weight: 500; color: var(--color-text-medium-dark);">You have no active mistakes!</p>
+            <p style="margin-top: 0.25rem; font-size: 0.875rem; color: #6b7280;">Time to tackle a new quiz.</p>
+          </div>
+        </div>
+      </main>
+    </div>
+    <div id="import-modal" class="modal-overlay">
+      <div class="modal-content">
+        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: var(--color-text-light);">AI Generate Quiz</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button onclick="showDeleteAllConfirmModal()" class="button-danger" style="font-size: x-small; padding: 5px;">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5" style="display: inline-block; width: 1.25rem; height: 1.25rem; margin-right: 0.5rem; vertical-align: middle;">
+                <path d="M2.94 2.94A1 1 0 013 4v12a1 1 0 01-1 1H1a1 1 0 01-1-1V4a1 1 0 011-1h1a1 1 0 01.94-.94zM10 4a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1h6zM17 6a1 1 0 011 1v8a1 1 0 01-1 1h-2a1 1 0 01-1-1V7a1 1 0 011-1h2z" clip-rule="evenodd" />
+              </svg> Delete All History </button>
+            <!-- <button onclick="copyAndPasteExample()" class="button-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;">
+                    Copy Example
+                </button> -->
+            <button id="generate-examples-button" onclick="generateExampleTopics()" class="button-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.75rem; background-color: #1d4ed8; color: white;">
+              <span id="gen-ex-default-text">Generate Examples</span>
+              <span id="gen-ex-loading-text" style="display: none;">Loading...</span>
+            </button>
+            <button onclick="clearImportText()" class="button-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.75rem; background-color: #4b5563; color: #e5e7eb;"> Clear </button>
+          </div>
+        </div>
+        <p style="font-size: 0.875rem; color: var(--color-text-medium-dark); margin: 0; padding-bottom: 15px;">Type a topic for AI generation or Paste quiz data</p>
+        <textarea id="import-json-input" oninput="checkJsonInput()"></textarea>
+        <div id="import-error-message" class="feedback-area error" style="display: none; font-size: x-small;"></div>
+        <div style="display: flex; justify-content: space-between; gap: 0.75rem; margin-top: 1.5rem;">
+          <button onclick="handleAIConvert()" id="ai-convert-button" class="button-ai" disabled>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" style="display: inline-block; width: 1.25rem; height: 1.25rem; margin-right: 0.5rem; vertical-align: middle;">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.91-7-7.93 0-.96.18-1.9.49-2.77l5.44 5.44.7.71.01.01H12c.55 0 1-.45 1-1v-4.5c0-.25.11-.5.3-.67l.1-.09c.17-.15.4-.19.62-.12l3.4 1.13c.2.06.33.25.33.47v2.24c0 3.29-2.43 6.01-5.65 6.46l-.35.02zM19.34 14c-.18-.62-.32-1.27-.42-1.95l-1.3 1.3c-.39.39-1.02.39-1.41 0l-1.3-1.3c-.39-.39-.39-1.02 0-1.41l1.3-1.3c.39-.39 1.02-.39 1.41 0l1.3 1.3c.39.39.39 1.02 0 1.41l-1.3 1.3c-.39.39-1.02.39-1.41 0l-1.3-1.3c-.39-.39-.39-1.02 0-1.41l1.3-1.3c.39.39 1.02-.39 1.41 0l.44.44C19.8 8.1 19.98 10.04 20 12c0 .94-.14 1.86-.39 2.73l-.27.99z" />
+            </svg>
+            <span id="ai-loading-text" style="display: none;">Processing...</span>
+            <span id="ai-default-text">AI Generate</span>
+          </button>
+          <div style="display: flex; gap: 0.75rem;">
+            <button onclick="hideImportModal()" class="button-secondary"> Cancel </button>
+            <button onclick="handleImport()" id="import-submit-button" class="button-primary" disabled>
+              <span id="import-loading-text" style="display: none;">Importing...</span>
+              <span id="import-default-text">Import and Save Quiz</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="delete-confirm-modal" class="modal-overlay" style="z-index: 55;">
+      <div class="modal-content">
+        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: var(--color-text-light);">Confirm Deletion</h3>
+        <p style="font-size: 0.875rem; color: var(--color-text-medium-dark); margin-bottom: 1.5rem;" id="delete-confirm-message"> Are you sure you want to delete this quiz? This action cannot be undone. </p>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button onclick="hideDeleteConfirmModal()" class="button-secondary"> Cancel </button>
+          <button onclick="confirmDelete()" id="confirm-delete-button" class="button-danger"> Delete </button>
+        </div>
+      </div>
+    </div>
+    <div id="toast-container" class="toast-container"></div>
+    <script>
+      /**
+       * Calls the AI to generate a list of example quiz topics.
+       */
+      window.generateExampleTopics = async () => {
+        if (API_KEY === "YOUR_GEMINI_API_KEY_HERE" || API_KEY.length === 0) {
+          window.showToast("AI features require a valid Gemini API key to be set in the code.", "error");
+          return;
+        }
+        const button = document.getElementById('generate-examples-button');
+        const defaultText = document.getElementById('gen-ex-default-text');
+        const loadingText = document.getElementById('gen-ex-loading-text');
+        const textarea = document.getElementById('import-json-input');
+        // Set loading state
+        button.disabled = true;
+        defaultText.style.display = 'none';
+        loadingText.style.display = 'inline';
+        const systemPrompt = `You are an expert language assistant for intermediate (B2 level) students who are learning English. Your job is to create 10 practical, speaking-focused grammar topics for a high school quiz. The quiz must check two things: correct grammar (word forms, sentence structure, verb tenses) and the student's ability to use the structure naturally in spoken conversations.
+
+Return ONLY the list of 10 topics. Each topic must be on a new line. Separate each topic with a double line break. Do not include numbers, bullet points, or any introductory text.
+
+Example format:
+
+Guessing and Deducting (Modal Verbs for Speculation)
+
+Talking About Past Regrets (Third and Mixed Conditionals)
+
+Telling Others What Was Said (Reported Speech and Backshifting)
+
+Adding Extra Detail (Non-Defining Relative Clauses)
+
+Talking About Ongoing Actions (Present Perfect Continuous)
+
+Using the Passive Voice When the Agent is Unimportant (Conversational Passive)
+
+Connecting Ideas (Discourse Markers and Adverbs)
+
+Verbs followed by Gerunds vs. Infinitives
+
+Expressing Obligation (Advanced Phrasal Modals)
+
+Making Sentences Dramatic (Using Inversion for Emphasis)`;
+        const userQuery = "Please generate 10 common grammar quiz topics.";
+        const payload = {
+          contents: [{
+            parts: [{
+              text: userQuery
+            }]
+          }],
+          systemInstruction: {
+            parts: [{
+              text: systemPrompt
+            }]
+          },
+          generationConfig: {
+            temperature: 0.7,
+          }
+        };
+        try {
+          const response = await fetchWithRetry(GEMINI_API_URL + API_KEY, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          });
+          const result = await response.json();
+          const topicListText = result.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+          if (!topicListText) {
+            throw new Error("AI failed to return a list of topics.");
+          }
+          // Get the original placeholder text
+          const originalPlaceholder = textarea.placeholder;
+          // Prepend the examples to the textarea, followed by the original instructions
+          textarea.value = `Example Topics\n(copy one below)\n\n${topicListText}${originalPlaceholder}`;
+          window.showToast("Example topics loaded! Copy one into the box.", "success");
+          checkJsonInput(); // Re-validate (will enable AI Generate button)
+        } catch (e) {
+          console.error("AI Example Topic Generation Error:", e);
+          window.showToast(`Failed to generate example topics. Error: ${e.message}`, "error");
+        } finally {
+          // Reset loading state
+          button.disabled = false;
+          defaultText.style.display = 'inline';
+          loadingText.style.display = 'none';
+        }
+      };
+      // Global state
+      let quizzes = [];
+      window.currentQuiz = null;
+      window.currentQuestionIndex = 0;
+      window.score = 0;
+      let answered = false; // Track if the current question has been answered
+      let quizIdToDelete = null; // Track quiz ID for delete modal
+      let mistakes = []; // NEW: Array to hold persistent mistakes
+      let isDeletingAll = false; // <-- ADD THIS NEW LINE
+      // ...
+      const LOCAL_STORAGE_KEY = 'grammarForgeQuizzes';
+      const MISTAKES_STORAGE_KEY = 'grammarForgeMistakes'; // NEW KEY
+      const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=";
+      // --- IMPORTANT: API KEY SETUP FOR GITHUB PAGES ---
+      // For the AI Convert feature to work on GitHub Pages, you must replace 
+      // the empty string below with your actual Gemini API key.
+      // WARNING: This key will be public. For production apps, use server-side 
+      // infrastructure to secure your key.
+      const API_KEY = "AIzaSyCkMHDE6Y4Y6UQObwpUJzmN5udN7UVv1Oc"; // <-- REPLACE THIS WITH YOUR KEY
+      // In the Canvas environment, this is automatically handled when the string is empty.
+      // Default quiz data if localStorage is empty
+      // NEW: JSON object for the modal's "Copy Example" feature
+      const modalExampleJson = {
+        "title": "Adjective, Adverb, and Tense Review",
+        "questions": [{
+          "text": "The dancer moved ___ across the stage.",
+          "options": ["graceful", "gracefully", "more graceful"],
+          "answer": "gracefully",
+          "explanation": "Adverbs like 'gracefully' modify verbs (moved) and typically end in -ly. Adjectives (graceful) modify nouns.",
+          "type": "mcq"
+        }, {
+          "text": "The past participle of the verb 'sing'' is [BLANK].",
+          "answer": "sung",
+          "explanation": "The forms are: sing (present), sang (simple past), and sung (past participle). This form is used with 'have/had/has'.",
+          "type": "fitb"
+        }]
+      };
+      // NEW: Stringified version for clipboard and textarea
+      const modalExampleJsonString = JSON.stringify(modalExampleJson, null, 2);
+      // --- Utility Functions ---
+      /**
+       * Exponential backoff retry wrapper for fetch calls.
+       */
+      async function fetchWithRetry(url, options, maxRetries = 5) {
+        for (let i = 0; i < maxRetries; i++) {
+          try {
+            const response = await fetch(url, options);
+            if (response.status !== 429 && response.ok) {
+              return response;
+            }
+            if (response.status === 429 || !response.ok) {
+              // Throw to trigger retry/catch block
+              throw new Error(`API Error: ${response.status} ${response.statusText}`);
+            }
+          } catch (error) {
+            if (i === maxRetries - 1) {
+              throw error; // Last retry failed
+            }
+            const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+            await new Promise(resolve => setTimeout(resolve, delay));
+          }
+        }
+      }
+      /**
+       * Shows a toast notification.
+       * @param {string} message - The message to display.
+       * @param {string} type - 'success' or 'error'.
+       */
+      window.showToast = (message, type) => {
+        const toastContainer = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.textContent = message;
+        toastContainer.appendChild(toast);
+        // Animate in
+        setTimeout(() => toast.classList.add('show'), 10);
+        // Animate out and remove
+        setTimeout(() => {
+          toast.classList.remove('show');
+          setTimeout(() => toast.remove(), 300);
+        }, 5000);
+      };
+      /**
+       * Loads quizzes and mistakes from localStorage.
+       */
+      function loadDataFromLocal() {
+        try {
+          const storedQuizzes = localStorage.getItem(LOCAL_STORAGE_KEY);
+          if (storedQuizzes) {
+            quizzes = JSON.parse(storedQuizzes);
+            // Ensure each quiz has a unique ID if it was added manually without one
+            quizzes = quizzes.map(q => ({
+              ...q,
+              id: q.id || crypto.randomUUID()
+            }));
+          } else {
+            // No saved quizzes, start with an empty list
+            quizzes = [];
+          }
+        } catch (e) {
+          console.error("Failed to load quizzes from localStorage:", e);
+          // Data corrupted, reset to an empty list
+          quizzes = [];
+          window.showToast("Corrupted local quiz data detected. Starting with a clean slate.", "error");
+        }
+        // NEW: Load mistakes
+        try {
+          const storedMistakes = localStorage.getItem(MISTAKES_STORAGE_KEY);
+          if (storedMistakes) {
+            mistakes = JSON.parse(storedMistakes);
+          } else {
+            mistakes = [];
+          }
+        } catch (e) {
+          console.error("Failed to load mistakes from localStorage:", e);
+          mistakes = [];
+          window.showToast("Corrupted local mistakes data detected. Mistake history reset.", "error");
+        }
+        renderQuizList();
+        updateMistakesButtonState(); // NEW: Update button visibility
+      }
+      /**
+       * Saves the current quizzes array to localStorage.
+       */
+      function saveQuizzesToLocal() {
+        try {
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(quizzes));
+        } catch (e) {
+          console.error("Failed to save quizzes to localStorage:", e);
+          window.showToast("Failed to save data locally. Your changes might be lost.", "error");
+        }
+      }
+      /**
+       * NEW: Saves the current mistakes array to localStorage.
+       */
+      function saveMistakesToLocal() {
+        try {
+          localStorage.setItem(MISTAKES_STORAGE_KEY, JSON.stringify(mistakes));
+          updateMistakesButtonState();
+        } catch (e) {
+          console.error("Failed to save mistakes to localStorage:", e);
+          window.showToast("Failed to save mistake data locally.", "error");
+        }
+      }
+      /**
+       * NEW: Updates the visibility of the Review Mistakes button.
+       */
+      function updateMistakesButtonState() {
+        const button = document.getElementById('review-mistakes-button');
+        if (button) {
+          button.style.display = mistakes.length > 0 ? 'inline-flex' : 'none';
+          if (mistakes.length > 0) {
+            button.textContent = `Review Mistakes (${mistakes.length})`;
+          }
+        }
+      }
+      /**
+       * NEW: Adds a question to the mistakes array.
+       * @param {object} question - The question object from the quiz.
+       */
+      function recordMistake(question) {
+        // Create a unique ID for the question itself for tracking
+        const mistakeIdentifier = question.text + question.answer;
+        // Check if this exact mistake already exists
+        const existingMistakeIndex = mistakes.findIndex(m => m.identifier === mistakeIdentifier);
+        const mistakeRecord = {
+          identifier: mistakeIdentifier, // Unique ID for this question text/answer pair
+          title: window.currentQuiz.title, // Title of the quiz where the mistake occurred
+          question: question.text,
+          answer: question.answer,
+          explanation: question.explanation || "No explanation provided.",
+          type: question.type,
+          options: question.options || [],
+          lastAttempted: new Date().toISOString(),
+          timesWrong: 1
+        };
+        if (existingMistakeIndex > -1) {
+          // Mistake exists, update the count and timestamp
+          mistakes[existingMistakeIndex].timesWrong += 1;
+          mistakes[existingMistakeIndex].lastAttempted = new Date().toISOString();
+        } else {
+          // New mistake, add it
+          mistakes.push(mistakeRecord);
+        }
+        saveMistakesToLocal();
+        window.showToast("Mistake recorded for review!", "error");
+      }
+      // --- AI Conversion Logic ---
+      /**
+       * Summarizes the current mistakes data into a text prompt for the AI.
+       * @returns {string} A summary of the user's mistakes.
+       */
+      function summarizeMistakesForAI() {
+        if (mistakes.length === 0) return "";
+        const mistakeSummary = {};
+        // Grouping by title (which is usually the topic) and counting
+        mistakes.forEach(m => {
+          const key = m.title.trim() || "General Grammar";
+          if (!mistakeSummary[key]) {
+            mistakeSummary[key] = {
+              count: 0,
+              questionTypes: []
+            };
+          }
+          mistakeSummary[key].count += m.timesWrong;
+          // Optionally add the specific question text/keyword
+          const keyText = m.question.replace('[BLANK]', '___').substring(0, 30);
+          mistakeSummary[key].questionTypes.push(keyText);
+        });
+        let prompt = `The user has made the following grammar mistakes across different topics. The number indicates how many times the user got that exact question wrong:
+
+Mistake Summary:
+`;
+        const sortedTitles = Object.keys(mistakeSummary).sort((a, b) => mistakeSummary[b].count - mistakeSummary[a].count);
+        sortedTitles.forEach(title => {
+          const data = mistakeSummary[title];
+          // Take top 3 unique sample questions for context
+          const sampleQuestions = [...new Set(data.questionTypes)].slice(0, 3).map(s => `"${s.trim()}..."`).join(', ');
+          prompt += `- Topic: "${title}" (Total errors: ${data.count}). Sample question snippets: ${sampleQuestions}\n`;
+        });
+        prompt += `\nYou are a specialized grammar analysis engine. A user will provide a list of specific example errors (e.g., 'The dog was running to the store,' 'I have went home early'). Your task is to analyze these examples and identify the single, most comprehensive grammar topic that, if mastered, would most significantly correct the user's focus errors. Return ONLY the name of this focus topic as a plain text string. The topic must be specific and narrow enough to be fully covered by a 15-question quiz (e.g., 'Gerunds and Infinitives' or 'Passive Voice Construction'). Do not include any other text, quotation marks, or markdown wrappers.`;
+        return prompt;
+      }
+      /**
+       * Calls the AI to generate a recommended quiz topic based on the user's mistakes.
+       */
+      window.generateRecommendedTopic = async () => {
+        if (API_KEY === "YOUR_GEMINI_API_KEY_HERE" || API_KEY.length === 0) {
+          window.showToast("AI features require a valid Gemini API key to be set in the code.", "error");
+          return;
+        }
+        if (mistakes.length === 0) {
+          window.showToast("No mistakes recorded to analyze. Try a quiz first!", "error");
+          return;
+        }
+        const button = document.getElementById('ai-recommend-button');
+        const defaultText = document.getElementById('ai-recommend-default-text');
+        const loadingText = document.getElementById('ai-recommend-loading-text');
+        // Set loading state
+        button.disabled = true;
+        defaultText.style.display = 'none';
+        loadingText.style.display = 'inline';
+        window.showToast("Analyzing mistakes and generating topic...", "success");
+        const systemPrompt = "You are a specialized grammar analysis engine. Your task is to receive a summary of a user's grammar mistakes and return ONLY the single grammar topic that represents the highest frequency of errors in the provided text. The output must be a single, focused grammar topic (e.g., 'Subject-Verb Agreement' or 'Misplaced Modifiers'). Do not include any other text, quotation marks, or markdown wrappers.";
+        const userQuery = summarizeMistakesForAI();
+        const payload = {
+          contents: [{
+            parts: [{
+              text: userQuery
+            }]
+          }],
+          systemInstruction: {
+            parts: [{
+              text: systemPrompt
+            }]
+          },
+          generationConfig: {
+            temperature: 0.3,
+          }
+        };
+        try {
+          const response = await fetchWithRetry(GEMINI_API_URL + API_KEY, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          });
+          const result = await response.json();
+          const topicText = result.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+          if (!topicText) {
+            throw new Error("AI failed to return a suggested topic.");
+          }
+          // Clean up any stray quotes or markdown from the model's output
+          const cleanTopic = topicText.replace(/^["']|["']$/g, '').trim();
+          // 1. Populate the import modal textarea with the suggested topic
+          document.getElementById('import-json-input').value = cleanTopic;
+          // 2. Open the import modal (where the AI Convert button is ready)
+          window.showImportModal();
+          window.showToast(`AI suggested topic: "${cleanTopic}". Click 'AI Generate' to create a custom quiz.`, "success");
+        } catch (e) {
+          console.error("AI Recommendation Error:", e);
+          window.showToast(`Failed to generate a recommended topic. Error: ${e.message}`, "error");
+        } finally {
+          // Reset loading state
+          button.disabled = false;
+          defaultText.style.display = 'inline';
+          loadingText.style.display = 'none';
+        }
+      };
+      /**
+       * Calls the Gemini API to convert non-standard quiz JSON or generate a quiz from a topic.
+       */
+      window.handleAIConvert = async () => {
+        if (API_KEY === "YOUR_GEMINI_API_KEY_HERE" || API_KEY.length === 0) {
+          window.showToast("AI Convert requires a valid Gemini API key to be set in the code.", "error");
+          return;
+        }
+        const inputElement = document.getElementById('import-json-input');
+        const submitButton = document.getElementById('ai-convert-button');
+        const defaultText = document.getElementById('ai-default-text');
+        const loadingText = document.getElementById('ai-loading-text');
+        const errorMessage = document.getElementById('import-error-message');
+        const rawInput = inputElement.value.trim();
+        if (!rawInput) {
+          window.showToast("Paste your quiz data or type a topic before attempting to convert.", "error");
+          return;
+        }
+        // Set loading state
+        submitButton.disabled = true;
+        defaultText.style.display = 'none';
+        loadingText.style.display = 'inline';
+        errorMessage.style.display = 'none';
+        // Define the strict output schema for the model
+        const requiredSchema = {
+          type: "OBJECT",
+          properties: {
+            "title": {
+              "type": "STRING",
+              "description": "The title of the quiz, derived from the topic if available."
+            },
+            "questions": {
+              "type": "ARRAY",
+              "items": {
+                "type": "OBJECT",
+                "properties": {
+                  "text": {
+                    "type": "STRING",
+                    "description": "The question text. Replace fill-in-the-blank spaces with the literal string [BLANK]."
+                  },
+                  "answer": {
+                    "type": "STRING",
+                    "description": "The correct answer value."
+                  },
+                  "explanation": {
+                    "type": "STRING",
+                    "description": "A detailed explanation of why the answer is correct."
+                  },
+                  "type": {
+                    "type": "STRING",
+                    "enum": ["mcq"],
+                    "description": "The type of question. Use 'mcq' if options are provided, 'fitb' if the answer is a single word/phrase and the question contains [BLANK]."
+                  },
+                  "options": {
+                    "type": "ARRAY",
+                    "items": {
+                      "type": "STRING"
+                    },
+                    "description": "Required only for type 'mcq'. Should be an array of all possible choices."
+                  }
+                },
+                "required": ["text", "answer", "explanation", "type"]
+              }
+            }
+          },
+          "required": ["title", "questions"]
+        };
+        // MODIFIED: This prompt now handles both generation from a topic and conversion from data.
+        const systemPrompt = 
+        `INPUT PROCESSING RULES:
+
+            IF the input is a grammar topic (e.g., "subject-verb agreement"), use the GENERATION RULES.
+
+            IF the input is non-JSON data (e.g., 'q':'text'), use the CONVERSION RULES.
+
+        GENERATION RULES:
+
+              Title: Create a relevant quiz title.
+
+              15 total questions. MUST be mcq.
+
+              Every question MUST have text, answer, explanation, type, and options.
+
+              Explanations MUST be grammar-focused, using precise terminology (e.g., compound subject, non-count noun, proximity rule).
+
+              Example 1 ('mcq')": {
+              "text": "She _______ to the store every day.",
+              "answer": "goes",
+              "explanation": "The simple present tense is required for habitual actions. Since 'She' is a third-person singular subject, the verb must take the '-s' form.",
+              "type": "mcq",
+              "options": [
+                  "go",
+                  "goes",
+                  "went",
+                  "going"
+                  ]
+              }
+
+              Example 2 ('mcq')": {
+              "text": "Seven dollars _______ too much for a cup of coffee.",
+              "answer": "is",
+              "explanation": "A quantity or amount (money, time, distance) used as a single, discrete unit requires a singular verb ('is').",
+              "type": "mcq",
+              "options": [
+                  "are",
+                  "is",
+                  "were",
+                  "seem"
+                  ]
+              }
+
+        CONVERSION RULES:
+
+              Map 'q'/'question' to 'text', 'a'/'correct' to 'answer', 'exp'/'info' to 'explanation'.
+
+              Title: Use 'Imported Quiz' or the derived topic.
+
+              Type: 'mcq' if options are present, 'fitb' otherwise (and add "[BLANK]" if missing).
+
+              Fix all structural issues.
+
+        FINAL OUTPUT:
+
+        RETURN ONLY THE RAW, VALID JSON OBJECT. Do not include any text, markdown, or commentary outside of the JSON block.`;
+        // MODIFIED: Simplified user query
+        const userQuery = `Process the following input based on the rules.
+
+User Input:
+${rawInput}`;
+        const payload = {
+          contents: [{
+            parts: [{
+              text: userQuery
+            }]
+          }],
+          systemInstruction: {
+            parts: [{
+              text: systemPrompt
+            }]
+          },
+          generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: requiredSchema
+          }
+        };
+        try {
+          const response = await fetchWithRetry(GEMINI_API_URL + API_KEY, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          });
+          const result = await response.json();
+          const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (!jsonText) {
+            throw new Error("AI failed to return structured data. Please check your input format or try again.");
+          }
+          // The model returns a string of JSON, parse it and format it nicely for display
+          const convertedJson = JSON.parse(jsonText);
+          const prettyJson = JSON.stringify(convertedJson, null, 2);
+          inputElement.value = prettyJson;
+          window.showToast("AI processing successful! Quiz data updated in the box.", "success");
+          checkJsonInput(); // Check the newly converted content to enable the Import button
+        } catch (e) {
+          console.error("AI Processing Error:", e);
+          let friendlyMessage = `AI Processing Failed. Error: ${e.message}. Please check your input format or internet connection.`;
+          // Specific error handling for 403 Forbidden
+          if (e.message.includes('403')) {
+            friendlyMessage = `AI Service Unavailable (Error 403): The conversion service is currently inaccessible. Please manually ensure your JSON is in the correct format for import and then use the "Import and Save Quiz" button.`;
+          } else if (e.message.includes('400')) {
+            friendlyMessage = `AI Processing Failed (Error 400). This often means the API key is incorrect or the input data is too complex/corrupted.`;
+          }
+          errorMessage.textContent = friendlyMessage;
+          errorMessage.style.display = 'block';
+        } finally {
+          // Reset loading state
+          submitButton.disabled = false;
+          defaultText.style.display = 'inline';
+          loadingText.style.display = 'none';
+        }
+      };
+      // --- App Rendering Logic ---
+      /**
+       * Renders the list of quizzes on the dashboard.
+       */
+      function renderQuizList() {
+        const quizListContainer = document.getElementById('quiz-list');
+        quizListContainer.innerHTML = '';
+        document.getElementById('empty-state').style.display = 'none';
+        // Hide other views
+        document.getElementById('quiz-run-view').style.display = 'none';
+        document.getElementById('mistakes-view').style.display = 'none';
+        document.getElementById('quiz-list-view').style.display = 'block';
+        if (quizzes.length === 0) {
+          document.getElementById('empty-state').style.display = 'block';
+          return;
+        }
+        quizzes.forEach(quiz => {
+          const card = document.createElement('div');
+          card.className = 'quiz-card';
+          // Escape quotes in quiz title for the onclick handler
+          const safeTitle = quiz.title.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+          card.innerHTML = `
+                    
+							<h3 style="font-size: 1.25rem; font-weight: 700; color: white; margin-bottom: 0.5rem;">${quiz.title || 'Untitled Quiz'}</h3>
+							<p style="font-size: 0.875rem; color: white; margin-bottom: 1rem;">${quiz.questions ? quiz.questions.length : 0} Questions</p>
+							<button onclick="startQuiz('${quiz.id}')" class="button-primary" style="width: 100%; margin-top: 0.5rem;">
+                        Start Quiz
+                    </button>
+							<button onclick="deleteQuiz('${quiz.id}', '${safeTitle}')" style="margin-top: 0.5rem; width: 100%; font-size: 0.875rem; color: var(--color-error-text); background: none; border: none; cursor: pointer; text-align: center;">
+                        Delete
+                    </button>
+                `;
+          quizListContainer.appendChild(card);
+        });
+      }
+      /**
+       * NEW: Renders the list of mistakes.
+       */
+      window.renderMistakesList = () => {
+        const mistakesListContainer = document.getElementById('mistakes-list');
+        mistakesListContainer.innerHTML = '';
+        document.getElementById('mistakes-empty-state').style.display = 'none';
+        // Toggle visibility for the recommendation button
+        const recommendButton = document.getElementById('ai-recommend-button');
+        if (mistakes.length === 0) {
+          document.getElementById('mistakes-empty-state').style.display = 'block';
+          recommendButton.disabled = true;
+          recommendButton.style.opacity = 0.5;
+          return;
+        }
+        recommendButton.disabled = false;
+        recommendButton.style.opacity = 1;
+        // Sort mistakes by timesWrong (highest first)
+        const sortedMistakes = [...mistakes].sort((a, b) => b.timesWrong - a.timesWrong);
+        sortedMistakes.forEach((mistake, index) => {
+          const card = document.createElement('div');
+          card.className = 'quiz-card mistake-card';
+          // Format last attempted date
+          const lastAttempt = new Date(mistake.lastAttempted).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          const questionText = mistake.question.includes('[BLANK]') ? mistake.question.replace('[BLANK]', `
+							<span style="color: var(--color-error-text); font-weight: 700;">[FILL IN]</span>`) : mistake.question;
+          // Only show options for MCQ for context
+          const optionsHtml = mistake.type === 'mcq' && mistake.options.length > 0 ? `
+							<p style="font-size: 0.8rem; color: var(--color-text-medium-dark); margin-top: 0.5rem;">Options: ${mistake.options.join(', ')}</p>` : '';
+          card.innerHTML = `
+                    
+							<h3 style="font-size: 1rem; font-weight: 700; color: var(--color-error-text); margin-bottom: 0.25rem;">Mistake ${index + 1}: ${mistake.title}</h3>
+							<p style="font-size: 0.8rem; color: var(--color-text-medium-dark); margin-bottom: 0.5rem;">
+                        Got Wrong: 
+								<span style="font-weight: 800; color: var(--color-error-text);">${mistake.timesWrong} times</span> 
+                        | Last Attempt: ${lastAttempt}
+                    
+							</p>
+							<div class="quiz-question-box" style="background-color: #1a1e33; padding: 1rem;">
+								<p style="font-size: 1.125rem; font-weight: 500; color: var(--color-text-light); margin-bottom: 0.5rem;">${questionText}</p>
+                        ${optionsHtml}
+                        
+								<p style="margin-top: 1rem; font-weight: 700; color: var(--color-success-text);">
+                            Correct Answer: "${mistake.answer}"
+                        </p>
+								<div class="feedback-explanation" style="border-top: 1px dashed var(--color-error-text);">
+									<strong>Explanation:</strong> ${mistake.explanation}
+                        
+								</div>
+							</div>
+							<button onclick="markAsMastered('${mistake.identifier}')" class="button-mastered">
+                        Remove from list
+                    </button>
+                `;
+          mistakesListContainer.appendChild(card);
+        });
+      }
+      /**
+       * NEW: Removes a mistake from the list after the user reviews it.
+       * @param {string} identifier - The unique identifier of the mistake.
+       */
+      window.markAsMastered = (identifier) => {
+        const initialLength = mistakes.length;
+        mistakes = mistakes.filter(m => m.identifier !== identifier);
+        if (mistakes.length < initialLength) {
+          saveMistakesToLocal();
+          renderMistakesList();
+          window.showToast("Mistake mastered! Removed from your list.", "success");
+        } else {
+          window.showToast("Error: Could not find mistake to remove.", "error");
+        }
+      };
+      /**
+       * Switches the view to the main dashboard list.
+       */
+      window.showListView = () => {
+        document.getElementById('quiz-list-view').style.display = 'block';
+        document.getElementById('quiz-run-view').style.display = 'none';
+        document.getElementById('mistakes-view').style.display = 'none'; // NEW
+        window.currentQuiz = null;
+        renderQuizList(); // Re-render in case data changed
+      };
+      /**
+       * NEW: Switches the view to the mistakes list.
+       */
+      window.showMistakesView = () => {
+        document.getElementById('quiz-list-view').style.display = 'none';
+        document.getElementById('quiz-run-view').style.display = 'none';
+        document.getElementById('mistakes-view').style.display = 'block';
+        window.currentQuiz = null;
+        renderMistakesList();
+      };
+      /**
+       * Switches the view to the quiz running page.
+       * @param {string} quizId - The ID of the quiz to start.
+       */
+      window.startQuiz = (quizId) => {
+        window.currentQuiz = quizzes.find(q => q.id === quizId);
+        if (!window.currentQuiz || !window.currentQuiz.questions || window.currentQuiz.questions.length === 0) {
+          window.showToast("Quiz is empty or not found.", "error");
+          return;
+        }
+        window.currentQuestionIndex = 0;
+        window.score = 0;
+        document.getElementById('quiz-list-view').style.display = 'none';
+        document.getElementById('mistakes-view').style.display = 'none'; // NEW
+        document.getElementById('quiz-run-view').style.display = 'block';
+        renderCurrentQuestion();
+      };
+      /**
+       * Renders the current question in the quiz view.
+       */
+      function renderCurrentQuestion() {
+        const container = document.getElementById('quiz-container');
+        if (window.currentQuestionIndex >= window.currentQuiz.questions.length) {
+          renderQuizResults(container);
+          return;
+        }
+        const question = window.currentQuiz.questions[window.currentQuestionIndex];
+        const qNum = window.currentQuestionIndex + 1;
+        const totalQ = window.currentQuiz.questions.length;
+        answered = false; // Reset answered state
+        let actionButton = `
+							<button id="submit-answer-button" onclick="checkAnswer()" class="button-primary" style="margin-top: 1.5rem; width: 100%; padding-top: 0.75rem; padding-bottom: 0.75rem;" disabled>
+                                    Submit Answer
+                                </button>`;
+        let questionContent = '';
+        let isFillInTheBlank = question.type === 'fitb';
+        if (question.type === 'mcq') {
+          // Render Multiple Choice Options
+          // Escape single quotes for use in the onclick string
+          const optionsHtml = question.options.map((option, index) => `
+                    
+							<button
+                        class="quiz-option"
+                        data-option="${option.replace(/"/g, "&quot;")}"
+                        onclick="checkAnswer(this, '${question.answer.replace(/'/g, "\\'")}')"
+                    >
+								<span style="font-weight: 600; color: var(--color-primary); margin-right: 0.75rem;">${String.fromCharCode(65 + index)}.</span> ${option}
+                    
+							</button>
+                `).join('');
+          questionContent = `
+							<div id="options-container" style="display: flex; flex-direction: column; gap: 1rem;">${optionsHtml}</div>`;
+          actionButton = ''; // MCQs are answered by clicking the option, so no separate submit button
+        } else if (isFillInTheBlank) {
+          // Render Fill in the Blank Input
+          const parts = question.text.split('[BLANK]');
+          if (parts.length !== 2) {
+            questionContent = `
+							<p style="color: var(--color-error-text); font-weight: 600;">Error: FITB question must contain exactly one [BLANK] marker.</p>`;
+            actionButton = '';
+          } else {
+            const questionTextWithInput = `
+                        
+							<div class="fitb-text-wrapper">
+                            ${parts[0]}
+                            
+								<input type="text" id="fitb-input" class="fitb-input" oninput="toggleSubmitButton()" placeholder="Type here" />
+                            ${parts[1]}
+                        
+							</div>
+                    `;
+            questionContent = `
+							<div id="fitb-container">${questionTextWithInput}</div>`;
+          }
+        }
+        // Render the full container
+        container.innerHTML = `
+                
+							<h2 style="font-size: 25px; font-weight: 700; color: white; margin-bottom: 0.5rem; text-align: center;">${window.currentQuiz.title}</h2>
+							<p style="color: var(--color-primary); font-weight: 600; margin-bottom: 1.5rem; margin-left: 10px;">Question ${qNum} of ${totalQ}</p>
+							<div class="quiz-question-box">
+								<p style="font-size: 1.125rem; font-weight: 500; color: var(--color-text-light);">${question.type === 'mcq' ? question.text : ''}</p>
+                    ${isFillInTheBlank ? questionContent : ''}
+                
+							</div>
+                
+                ${question.type === 'mcq' ? questionContent : ''}
+
+                
+							<div id="feedback-area" class="feedback-area" style="display: none;"></div>
+							<button id="next-button" onclick="nextQuestion()" class="button-primary" style="margin-top: 1.5rem; width: 100%; padding-top: 0.75rem; padding-bottom: 0.75rem; display: none;">
+                    Next Question
+                </button>
+                
+                ${actionButton}
+            `;
+        // Focus on the input if it exists
+        if (isFillInTheBlank) {
+          document.getElementById('fitb-input')?.focus();
+        }
+      }
+      /**
+       * Toggles the submit button for FITB questions based on input content.
+       */
+      window.toggleSubmitButton = () => {
+        if (answered) return;
+        const input = document.getElementById('fitb-input');
+        const submitButton = document.getElementById('submit-answer-button');
+        if (input && submitButton) {
+          submitButton.disabled = input.value.trim() === '';
+        }
+      }
+      /**
+       * Handles checking the answer for both MCQ and FITB questions.
+       * @param {HTMLElement} [element] - The button element clicked (MCQ only).
+       * @param {string} [correctAnswer] - The correct answer string (MCQ only).
+       */
+      window.checkAnswer = (element = null, correctAnswer = null) => {
+        if (answered) return;
+        const question = window.currentQuiz.questions[window.currentQuestionIndex];
+        const feedbackArea = document.getElementById('feedback-area');
+        const nextButton = document.getElementById('next-button');
+        let isCorrect = false;
+        let feedbackText = '';
+        if (question.type === 'mcq') {
+          // --- MCQ Logic ---
+          const optionsContainer = document.getElementById('options-container');
+          let submittedAnswer = element.getAttribute('data-option');
+          isCorrect = submittedAnswer === correctAnswer;
+          // Disable all buttons
+          optionsContainer.querySelectorAll('.quiz-option').forEach(btn => {
+            btn.disabled = true;
+            btn.style.cursor = 'default';
+            // Keep existing background if it's not the clicked one
+            if (btn !== element) {
+              btn.style.backgroundColor = '#f9fafb';
+            }
+          });
+          if (isCorrect) {
+            element.classList.add('correct');
+            feedbackText = '<span style="font-weight: 700;">Correct!</span> Well done.';
+          } else {
+            element.classList.add('incorrect');
+            // Find the correct answer button
+            const correctBtn = optionsContainer.querySelector(`[data-option="${correctAnswer.replace(/"/g, "&quot;")}"]`);
+            if (correctBtn) {
+              correctBtn.classList.add('correct');
+            }
+            feedbackText = `
+							<span style="font-weight: 700;">Incorrect.</span> The correct answer was: "${question.answer}"`;
+          }
+        } else if (question.type === 'fitb') {
+          // --- FITB Logic ---
+          const inputElement = document.getElementById('fitb-input');
+          const submitButton = document.getElementById('submit-answer-button');
+          if (!inputElement) return;
+          let submittedAnswer = inputElement.value.trim();
+          correctAnswer = question.answer;
+          isCorrect = submittedAnswer.toLowerCase() === correctAnswer.toLowerCase();
+          // Show result on the input field
+          inputElement.disabled = true;
+          if (submitButton) submitButton.style.display = 'none';
+          // FIX: Use quotes around var() to treat it as a CSS string value
+          if (isCorrect) {
+            inputElement.style.borderColor = 'var(--color-success-text)';
+            inputElement.style.color = 'var(--color-success-text)';
+            feedbackText = ' < span style = "font-weight: 700;" > Correct! < /span> Well done.';
+          } else {
+            inputElement.style.borderColor = 'var(--color-error-text)';
+            inputElement.style.color = 'var(--color-error-text)';
+            feedbackText = `
+							<span style="font-weight: 700;">Incorrect.</span> The correct answer was: "${question.answer}"`;
+          }
+        }
+        // --- Common Logic ---
+        // NEW: Record mistake if incorrect
+        if (!isCorrect) {
+          recordMistake(question);
+        }
+        // Update Score
+        if (isCorrect) {
+          window.score++;
+          feedbackArea.className = 'feedback-area success';
+        } else {
+          feedbackArea.className = 'feedback-area error';
+        }
+        // Add Explanation if available
+        if (question.explanation) {
+          feedbackText += `
+							<div class="feedback-explanation">
+								<strong>Explanation:</strong> ${question.explanation}
+                                
+							</div>`;
+        }
+        feedbackArea.innerHTML = feedbackText;
+        answered = true;
+        feedbackArea.style.display = 'block';
+        nextButton.style.display = 'block';
+        // --- New Focus Logic ---
+        const explanationEl = feedbackArea.querySelector('.feedback-explanation');
+        if (explanationEl) {
+          // Add class to trigger animation
+          explanationEl.classList.add('focused');
+          // Scroll to the feedback area
+          feedbackArea.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          });
+          // Remove class after animation to allow re-triggering
+          setTimeout(() => {
+            explanationEl.classList.remove('focused');
+          }, 1200); // Match animation duration
+        } else {
+          // If no explanation, just scroll to feedback
+          feedbackArea.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          });
+        }
+      };
+      /**
+       * Advances to the next question or finishes the quiz.
+       */
+      window.nextQuestion = () => {
+        window.currentQuestionIndex++;
+        renderCurrentQuestion();
+      };
+      /**
+       * Renders the final quiz results.
+       */
+      function renderQuizResults(container) {
+        const totalQuestions = window.currentQuiz.questions.length;
+        const percentage = (window.score / totalQuestions) * 100;
+        let resultMessage = "Excellent work! Keep it up.";
+        let resultColor = "#10b981"; // green-500
+        if (percentage < 50) {
+          resultMessage = "Needs some practice. Review the grammar rules!";
+          resultColor = "#ef4444"; // red-500
+        } else if (percentage < 80) {
+          resultMessage = "Good job! You're almost there.";
+          resultColor = "#f59e0b"; // yellow-600
+        }
+        container.innerHTML = `
+                
+							<div style="text-align: center; padding: 2rem;">
+								<svg
+									xmlns="http://www.w3.org/2000/svg" style="width: 4rem; height: 4rem; margin: auto; color: ${resultColor};" viewBox="0 0 20 20" fill="currentColor">
+									<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+								</svg>
+								<h2 style="font-size: 1.875rem; font-weight: 700; color: var(--color-text-light); margin-top: 1rem;">Quiz Complete!</h2>
+								<p style="font-size: 1.25rem; margin-top: 0.5rem; margin-bottom: 1rem;">Your Score: 
+									<span style="font-weight: 800; color: ${resultColor};">${window.score} / ${totalQuestions}</span>
+								</p>
+								<p style="font-size: 1.125rem; color: var(--color-text-medium-dark); margin-bottom: 1.5rem;">${resultMessage}</p>
+								<button onclick="showListView()" class="button-primary" style="padding: 0.5rem 1.5rem;">
+                        View All Quizzes
+                    </button>
+								<button onclick="showMistakesView()" class="button-review" style="padding: 0.5rem 1.5rem; margin-left: 1rem;">
+                        Review Mistakes
+                    </button>
+							</div>
+            `;
+      }
+      // --- Import Modal Logic ---
+      // NEW: Function to copy and paste the example JSON
+      /**
+       * Copies the example JSON to the clipboard and pastes it into the textarea.
+       */
+      window.copyAndPasteExample = () => {
+        try {
+          const textarea = document.getElementById('import-json-input');
+          textarea.value = modalExampleJsonString;
+          navigator.clipboard.writeText(modalExampleJsonString).then(() => {
+            window.showToast("Example JSON copied and pasted!", "success");
+            checkJsonInput(); // This will validate the new content and enable the import button
+          }).catch(err => {
+            console.error("Failed to copy: ", err);
+            window.showToast("Failed to copy to clipboard.", "error");
+            checkJsonInput(); // Still validate, as paste was successful
+          });
+        } catch (e) {
+          console.error("Error in copyAndPasteExample: ", e);
+        }
+      };
+      /**
+       * NEW: Clears the text from the import modal's textarea.
+       */
+      window.clearImportText = () => {
+        const textarea = document.getElementById('import-json-input');
+        textarea.value = '';
+        checkJsonInput(); // Re-run validation to disable buttons
+        window.showToast("Import text cleared.", "success");
+      };
+      window.showImportModal = () => {
+        document.getElementById('import-modal').classList.add('active');
+        document.getElementById('import-error-message').style.display = 'none';
+        checkJsonInput(); // Check immediately to set initial disabled state
+      };
+      window.hideImportModal = () => {
+        document.getElementById('import-modal').classList.remove('active');
+      };
+      /**
+       * Checks if the JSON input is valid and enables the buttons.
+       */
+      window.checkJsonInput = () => {
+        const input = document.getElementById('import-json-input').value.trim();
+        const importButton = document.getElementById('import-submit-button');
+        const convertButton = document.getElementById('ai-convert-button');
+        const errorMessage = document.getElementById('import-error-message');
+        errorMessage.style.display = 'none';
+        importButton.disabled = true;
+        // Disable AI Convert button if API key is not set
+        convertButton.disabled = (API_KEY === "YOUR_GEMINI_API_KEY_HERE" || API_KEY.length === 0);
+        if (!input) return;
+        // Enable AI Convert button as long as there is text AND the key is set
+        if (!convertButton.disabled) {
+          convertButton.disabled = false;
+        }
+        try {
+          const parsed = JSON.parse(input);
+          // Now check if it's VALID in our expected format
+          if (typeof parsed.title !== 'string' || !Array.isArray(parsed.questions) || parsed.questions.length === 0) {
+            throw new Error("Missing 'title' or 'questions' array, or array is empty (Standard format check failed).");
+          }
+          parsed.questions.forEach((q, index) => {
+            // Explanation is optional, so we don't check for it here.
+            if (!q.text || !q.answer || !q.type) {
+              throw new Error(`Question ${index + 1} is missing text, answer, or type.`);
+            }
+            if (q.type === 'mcq') {
+              if (!Array.isArray(q.options) || q.options.length < 2) {
+                throw new Error(`MCQ Question ${index + 1} requires an "options" array with at least 2 items.`);
+              }
+              if (!q.options.includes(q.answer)) {
+                throw new Error(`MCQ Question ${index + 1}: Correct answer "${q.answer}" is not listed in options.`);
+              }
+            } else if (q.type === 'fitb') {
+              if (!q.text.includes('[BLANK]')) {
+                throw new Error(`FITB Question ${index + 1} must contain the placeholder "[BLANK]" in the question text.`);
+              }
+            } else {
+              throw new Error(`Question ${index + 1} has an invalid type: "${q.type}". Must be "mcq" or "fitb".`);
+            }
+          });
+          // If it passes all checks, enable the direct import button
+          importButton.disabled = false;
+        } catch (e) {
+          // MODIFIED: Updated error text to reflect new AI capabilities
+          // If parsing fails or standard validation fails, display the error but keep AI Convert enabled (if key is set)
+          errorMessage.textContent = `Standard Import validation failed: ${e.message}. This is OK if you entered a topic prompt. You can use "AI Generate" to process this data.`;
+          errorMessage.style.display = 'block';
+          importButton.disabled = true;
+        }
+      }
+      /**
+       * Handles the JSON import, parsing, validation, and saving to localStorage.
+       */
+      window.handleImport = async () => {
+        const inputElement = document.getElementById('import-json-input');
+        const jsonString = inputElement.value.trim();
+        const submitButton = document.getElementById('import-submit-button');
+        const defaultText = document.getElementById('import-default-text');
+        const loadingText = document.getElementById('import-loading-text');
+        try {
+          // Re-run validation logic (checkJsonInput logic will throw if invalid)
+          const quizData = JSON.parse(jsonString);
+          checkJsonInput(); // This will throw and go to catch if invalid
+          // --- NEW LOGIC: Filter out 'fitb' questions ---
+          const filteredQuestions = quizData.questions.filter(q => q.type !== 'fitb');
+          if (filteredQuestions.length === 0) {
+            window.showToast(`Quiz topic "${quizData.title}" contained no multiple-choice questions after filtering. Quiz not imported.`, "error");
+            return; // Stop the function
+          }
+          // ---------------------------------------------
+          submitButton.disabled = true;
+          defaultText.style.display = 'none';
+          loadingText.style.display = 'inline';
+          // Add unique ID for local tracking
+          const newQuiz = {
+            id: crypto.randomUUID(),
+            title: quizData.title,
+            questions: filteredQuestions, // *** Use the filtered list here ***
+            createdAt: new Date().toISOString()
+          };
+          // Add to local array and save
+          quizzes.push(newQuiz);
+          saveQuizzesToLocal();
+          window.showToast(`Successfully imported and saved quiz: "${quizData.title}"!`, "success");
+          window.hideImportModal();
+          renderQuizList(); // Update the view
+        } catch (e) {
+          // ... (rest of the catch block remains the same)
+          submitButton.disabled = false;
+          defaultText.style.display = 'inline';
+          loadingText.style.display = 'none';
+          window.showToast(`Import Failed. Invalid JSON or quiz format: ${e.message}`, "error");
+        }
+      };
+      // --- Delete Confirmation Modal Logic (Replaced confirm()) ---
+      /**
+       * Shows the custom delete confirmation modal.
+       * @param {string} quizId - The ID of the quiz to be deleted.
+       * @param {string} quizTitle - The title of the quiz.
+       */
+      window.showDeleteConfirmModal = (quizId, quizTitle) => {
+        quizIdToDelete = quizId;
+        const modal = document.getElementById('delete-confirm-modal');
+        const message = document.getElementById('delete-confirm-message');
+        message.textContent = `Are you sure you want to delete the quiz "${quizTitle}"? This action cannot be undone.`;
+        modal.classList.add('active');
+      };
+      /**
+       * Hides the custom delete confirmation modal.
+       */
+      /**
+       * Hides the custom delete confirmation modal, resetting state for next use.
+       */
+      window.hideDeleteConfirmModal = () => {
+        isDeletingAll = false; // NEW: Reset the flag
+        quizIdToDelete = null;
+        document.getElementById('delete-confirm-modal').classList.remove('active');
+        // NEW: Reset modal content for single quiz deletion next time
+        const deleteConfirmMessage = document.getElementById('delete-confirm-message');
+        const confirmDeleteButton = document.getElementById('confirm-delete-button');
+        // This resets the modal back to its default state for single deletion
+        deleteConfirmMessage.innerHTML = 'Are you sure you want to delete this quiz? This action cannot be undone.';
+        confirmDeleteButton.textContent = 'Delete';
+        confirmDeleteButton.setAttribute('onclick', 'confirmDelete()');
+      };
+      /**
+       * Performs the actual deletion after confirmation.
+       */
+      window.confirmDelete = () => {
+        if (!quizIdToDelete) return;
+        // Filter out the deleted quiz
+        quizzes = quizzes.filter(q => q.id !== quizIdToDelete);
+        saveQuizzesToLocal();
+        renderQuizList();
+        window.showToast("Quiz deleted successfully.", "success");
+        hideDeleteConfirmModal();
+      };
+      /**
+       * Shows the delete modal instead of using window.confirm().
+       * @param {string} quizId - The ID of the quiz to delete.
+       * @param {string} quizTitle - The title of the quiz (passed from renderer).
+       */
+      window.deleteQuiz = (quizId, quizTitle) => {
+        // Use default title if not provided (fallback)
+        const title = quizTitle || (quizzes.find(q => q.id === quizId) || {}).title || 'this quiz';
+        // Show custom modal instead of confirm()
+        showDeleteConfirmModal(quizId, title);
+      };
+      // --- NEW: Delete All History Logic ---
+      /**
+       * Shows the delete confirmation modal customized for "Delete All".
+       */
+      window.showDeleteAllConfirmModal = () => {
+        isDeletingAll = true; // Set flag to activate bulk delete mode
+        quizIdToDelete = null; // Clear single delete ID
+        const deleteConfirmModal = document.getElementById('delete-confirm-modal');
+        const deleteConfirmMessage = document.getElementById('delete-confirm-message');
+        const confirmDeleteButton = document.getElementById('confirm-delete-button');
+        deleteConfirmMessage.innerHTML = 'Are you sure you want to **delete ALL**? This action cannot be undone and will clear your entire history.';
+        confirmDeleteButton.textContent = 'Delete All History';
+        // Change the confirmation button's action to the new bulk delete function
+        confirmDeleteButton.setAttribute('onclick', 'confirmDeleteAllHistory()');
+        deleteConfirmModal.classList.add('active');
+      };
+      /**
+       * Permanently deletes all quizzes and mistake history from local storage.
+       */
+      window.confirmDeleteAllHistory = () => {
+        if (!isDeletingAll) return; // Safety check
+        // 1. Clear both storage keys
+        localStorage.removeItem(LOCAL_STORAGE_KEY); // Clears all saved quizzes
+        localStorage.removeItem(MISTAKES_STORAGE_KEY); // Clears all saved mistakes
+        // 2. Reset global state and reload with default example
+        // The loadDataFromLocal function has logic to load the default quiz if storage is empty.
+        loadDataFromLocal();
+        // 3. Update UI
+        renderQuizList();
+        showListView(); // Ensure we are on the main view
+        window.showToast("All quiz history and mistakes have been permanently deleted.", "success");
+        // 4. Hide and reset modal for next time
+        hideDeleteConfirmModal();
+      };
+      // --- END NEW LOGIC ---
+      // --- Initialization ---
+      window.onload = loadDataFromLocal; // Changed to loadDataFromLocal
+    </script>
+  </body>
+</html>
